@@ -1,8 +1,8 @@
 import { Setting } from "obsidian";
 import QuizGenerator from "../../main";
-import { languages } from "./generalConfig";
+import { deckModes, DeckMode, languages } from "./generalConfig";
 
-const displayGeneralSettings = (containerEl: HTMLElement, plugin: QuizGenerator): void => {
+const displayGeneralSettings = (containerEl: HTMLElement, plugin: QuizGenerator, refreshSettings: () => void): void => {
 	new Setting(containerEl)
 		.setName("Show note path")
 		.setDesc("Turn this off to only show the name of selected notes.")
@@ -63,6 +63,51 @@ const displayGeneralSettings = (containerEl: HTMLElement, plugin: QuizGenerator)
 					await plugin.saveSettings();
 				})
 		);
+
+	// Deck-based review settings
+	containerEl.createEl("h3", { text: "Deck Review" });
+
+	new Setting(containerEl)
+		.setName("Deck mode")
+		.setDesc("How to organize questions into decks.")
+		.addDropdown(dropdown =>
+			dropdown
+				.addOptions(deckModes)
+				.setValue(plugin.settings.deckMode)
+				.onChange(async (value: string) => {
+					plugin.settings.deckMode = value as DeckMode;
+					await plugin.saveSettings();
+					refreshSettings();
+				})
+		);
+
+	new Setting(containerEl)
+		.setName("Scan entire vault")
+		.setDesc("If enabled, all notes in the vault will be scanned for inline questions. If disabled, only notes in the folders below will be scanned.")
+		.addToggle(toggle =>
+			toggle
+				.setValue(plugin.settings.scanEntireVault)
+				.onChange(async (value) => {
+					plugin.settings.scanEntireVault = value;
+					await plugin.saveSettings();
+					refreshSettings();
+				})
+		);
+
+	if (!plugin.settings.scanEntireVault) {
+		new Setting(containerEl)
+			.setName("Deck folders")
+			.setDesc("Comma-separated list of folder paths to scan for inline questions.")
+			.addText(text =>
+				text
+					.setPlaceholder("e.g., Notes,Study,Reviews")
+					.setValue(plugin.settings.deckFolders?.join(",") || "")
+					.onChange(async (value) => {
+						plugin.settings.deckFolders = value.split(",").map(f => f.trim()).filter(f => f);
+						await plugin.saveSettings();
+					})
+			);
+	}
 };
 
 export default displayGeneralSettings;

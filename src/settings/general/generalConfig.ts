@@ -23,12 +23,28 @@ export const languages: Record<string, string> = {
 	Indonesian: "Bahasa Indonesia",
 };
 
+export enum DeckMode {
+	PER_FILE = "per_file",
+	ONE_BIG_DECK = "one_big_deck",
+	FOLDER_BASED = "folder_based",
+}
+
+export const deckModes: Record<DeckMode, string> = {
+	[DeckMode.PER_FILE]: "Per File (each note is a deck)",
+	[DeckMode.ONE_BIG_DECK]: "One Big Deck (all questions together)",
+	[DeckMode.FOLDER_BASED]: "Folder Based (folders as sub-decks)",
+};
+
 export interface GeneralConfig {
 	showNotePath: boolean;
 	showFolderPath: boolean;
 	includeSubfolderNotes: boolean;
 	randomizeQuestions: boolean;
 	language: string;
+	// Deck-based review settings
+	deckMode: DeckMode;
+	deckFolders: string[];
+	scanEntireVault: boolean;
 }
 
 export const DEFAULT_GENERAL_SETTINGS: GeneralConfig = {
@@ -37,4 +53,8 @@ export const DEFAULT_GENERAL_SETTINGS: GeneralConfig = {
 	includeSubfolderNotes: true,
 	randomizeQuestions: true,
 	language: "English",
+	// Deck-based review defaults
+	deckMode: DeckMode.PER_FILE,
+	deckFolders: [],
+	scanEntireVault: true,
 };

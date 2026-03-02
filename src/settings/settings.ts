@@ -20,7 +20,7 @@ export default class QuizSettingsTab extends PluginSettingTab {
 
 		const refreshSettings = this.display.bind(this);
 
-		displayGeneralSettings(containerEl, this.plugin);
+		displayGeneralSettings(containerEl, this.plugin, refreshSettings);
 		displayModelSettings(containerEl, this.plugin, refreshSettings);
 		displayGenerationSettings(containerEl, this.plugin);
 		displaySavingSettings(containerEl, this.plugin);

@@ -3,6 +3,7 @@ import { DEFAULT_SETTINGS, QuizSettings } from "./settings/config";
 import SelectorModal from "./ui/selector/selectorModal";
 import QuizSettingsTab from "./settings/settings";
 import QuizReviewer from "./services/quizReviewer";
+import { DeckSelectorModal } from "./ui/deck/deckSelectorModal";
 
 export default class QuizGenerator extends Plugin {
 	public settings: QuizSettings = DEFAULT_SETTINGS;
@@ -20,11 +21,23 @@ export default class QuizGenerator extends Plugin {
 			new SelectorModal(this.app, this.settings).open();
 		});
 
+		this.addRibbonIcon("library", "Open deck review", (): void => {
+			new DeckSelectorModal(this.app, this.settings).open();
+		});
+
 		this.addCommand({
 			id: "open-quiz-from-active-note",
 			name: "Open quiz from active note",
 			callback: (): void => {
 				new QuizReviewer(this.app, this.settings).openQuiz(this.app.workspace.getActiveFile());
+			}
+		});
+
+		this.addCommand({
+			id: "open-deck-review",
+			name: "Open deck review",
+			callback: (): void => {
+				new DeckSelectorModal(this.app, this.settings).open();
 			}
 		});
 
