@@ -23,7 +23,7 @@ const ShortOrLongAnswerQuestion = ({ app, question, settings, revealAnswer }: Sh
 	}, [revealAnswer, status]);
 	const component = useMemo<Component>(() => new Component(), []);
 	const questionRef = useRef<HTMLDivElement>(null);
-	const answerRef = useRef<HTMLButtonElement>(null);
+	const answerRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
 		question.question.split("\\n").forEach(questionFragment => {
@@ -66,7 +66,12 @@ const ShortOrLongAnswerQuestion = ({ app, question, settings, revealAnswer }: Sh
 	return (
 		<div className="question-container-qg">
 			<div className="question-qg" ref={questionRef} />
-			{status === "submitted" && <button className="answer-qg" ref={answerRef} />}
+			{status === "submitted" && (
+				<div className="answer-container-qg">
+					<div className="answer-label-qg">Correct Answer:</div>
+					<div className="answer-qg" ref={answerRef} />
+				</div>
+			)}
 			<div className={status === "submitted" ? "input-container-qg" : "input-container-qg limit-height-qg"}>
 				<AnswerInput onSubmit={handleSubmit} clearInputOnSubmit={false} disabled={status !== "answering"} />
 				<div className="instruction-footnote-qg">

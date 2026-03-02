@@ -260,13 +260,25 @@ FillInTheBlankQuestion, MatchingQuestion, ShortOrLongAnswerQuestion */
 }
 
 /* ShortOrLongAnswerQuestion */
+.answer-container-qg {
+	margin: 1em 0;
+	padding: 1em;
+	border: 2px solid var(--color-green);
+	border-radius: 0.5rem;
+	background-color: var(--background-primary-alt);
+}
+
+.answer-label-qg {
+	font-weight: bold;
+	color: var(--color-green);
+	margin-bottom: 0.5em;
+	font-size: 0.9em;
+}
+
 .answer-qg {
 	width: 100%;
 	height: auto;
-	border: 0.125em solid;
-	margin-bottom: 1em;
 	background-color: transparent !important;
-	box-shadow: none !important;
 	white-space: normal !important;
 	text-align: left;
 	font-size: 1em;

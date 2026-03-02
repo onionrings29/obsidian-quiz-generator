@@ -29,14 +29,29 @@ export default class OllamaGenerator extends Generator {
 
 	public async shortOrLongAnswerSimilarity(userAnswer: string, answer: string): Promise<number> {
 		try {
-			const embedding = await this.ollama.embed({
+			const response = await this.ollama.embed({
 				model: this.settings.ollamaEmbeddingModel,
 				input: [userAnswer, answer],
 			});
 
-			return cosineSimilarity(embedding.embeddings[0], embedding.embeddings[1]);
+			// Handle different response formats from Ollama
+			const embeddings = response.embeddings;
+			if (!Array.isArray(embeddings) || embeddings.length < 2) {
+				throw new Error("Invalid embedding response from Ollama");
+			}
+
+			const userEmbedding = embeddings[0];
+			const correctEmbedding = embeddings[1];
+
+			// Ensure embeddings are arrays of numbers
+			if (!Array.isArray(userEmbedding) || !Array.isArray(correctEmbedding)) {
+				throw new Error("Invalid embedding format from Ollama");
+			}
+
+			return cosineSimilarity(userEmbedding, correctEmbedding);
 		} catch (error) {
-			throw new Error((error as Error).message);
+			console.error("Embedding error:", error);
+			throw new Error(`Embedding failed: ${(error as Error).message}`);
 		}
 	}
 }
