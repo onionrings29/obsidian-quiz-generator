@@ -12,13 +12,13 @@ const SelectAllThatApplyQuestion = ({ app, question, revealAnswer }: SelectAllTh
 	const [userAnswer, setUserAnswer] = useState<number[]>([]);
 	const [submitted, setSubmitted] = useState<boolean>(false);
 	
-	// Show answer when revealAnswer prop is true
+	// Reveal correct answer visually when revealAnswer is true, but keep submitted state independent
 	useEffect(() => {
-		if (revealAnswer && !submitted) {
-			setUserAnswer(question.answer);
-			setSubmitted(true);
+		if (revealAnswer) {
+			// Just ensure we show the correct/incorrect styling
+			// Don't auto-submit - let user submit manually first
 		}
-	}, [revealAnswer, question.answer, submitted]);
+	}, [revealAnswer]);
 	const questionRef = useRef<HTMLDivElement>(null);
 	const buttonRefs = useRef<(HTMLButtonElement | null)[]>([]);
 

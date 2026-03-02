@@ -20,6 +20,7 @@
 .modal-content-flex-qg {
 	display: flex;
 	flex-direction: column;
+	overflow-y: auto;
 }
 
 /* SelectorModal, FolderViewerModal */
@@ -120,6 +121,7 @@ FillInTheBlankQuestion, MatchingQuestion, ShortOrLongAnswerQuestion */
 	display: flex;
 	flex-direction: column;
 	flex-grow: 1;
+	min-height: 0;
 }
 
 /* TrueFalseQuestion, MultipleChoiceQuestion, SelectAllThatApplyQuestion,
@@ -220,6 +222,9 @@ FillInTheBlankQuestion, MatchingQuestion, ShortOrLongAnswerQuestion */
 	box-shadow: none !important;
 	font-size: 1em;
 	cursor: pointer;
+	visibility: visible !important;
+	display: block !important;
+	margin-top: 1rem;
 }
 
 /* SelectAllThatApplyQuestion, MatchingQuestion */
