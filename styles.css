@@ -435,6 +435,28 @@ FillInTheBlankQuestion, MatchingQuestion, ShortOrLongAnswerQuestion */
 	text-align: center;
 }
 
+/* Spaced Repetition Result Display */
+.sr-result {
+	padding: 0.75em 1em;
+	margin: 0.5em 0;
+	border-radius: 0.5rem;
+	font-weight: bold;
+	text-align: center;
+	font-size: 1.1em;
+}
+
+.sr-result-correct {
+	background-color: rgba(var(--color-green-rgb), 0.2);
+	color: var(--color-green);
+	border: 2px solid var(--color-green);
+}
+
+.sr-result-incorrect {
+	background-color: rgba(var(--color-red-rgb), 0.2);
+	color: var(--color-red);
+	border: 2px solid var(--color-red);
+}
+
 /* Spaced Repetition Controls */
 .sr-controls-qg {
 	margin-top: auto;

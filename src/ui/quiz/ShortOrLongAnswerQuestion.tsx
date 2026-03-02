@@ -14,6 +14,7 @@ interface ShortOrLongAnswerQuestionProps {
 
 const ShortOrLongAnswerQuestion = ({ app, question, settings, revealAnswer }: ShortOrLongAnswerQuestionProps) => {
 	const [status, setStatus] = useState<"answering" | "evaluating" | "submitted">("answering");
+	const [result, setResult] = useState<{ similarity: number; isCorrect: boolean } | null>(null);
 	
 	// Show answer when revealAnswer prop is true
 	useEffect(() => {
@@ -21,6 +22,7 @@ const ShortOrLongAnswerQuestion = ({ app, question, settings, revealAnswer }: Sh
 			setStatus("submitted");
 		}
 	}, [revealAnswer, status]);
+
 	const component = useMemo<Component>(() => new Component(), []);
 	const questionRef = useRef<HTMLDivElement>(null);
 	const answerRef = useRef<HTMLDivElement>(null);
@@ -47,35 +49,68 @@ const ShortOrLongAnswerQuestion = ({ app, question, settings, revealAnswer }: Sh
 
 		try {
 			setStatus("evaluating");
-			new Notice("Evaluating answer...");
+			new Notice("Evaluating answer...", 2000);
+			
 			const generator = GeneratorFactory.createInstance(settings);
 			const similarity = await generator.shortOrLongAnswerSimilarity(input.trim(), question.answer);
 			const similarityPercentage = Math.round(similarity * 100);
-			if (similarityPercentage >= 80) {
-				new Notice(`Correct: ${similarityPercentage}% match`);
+			const isCorrect = similarityPercentage >= 80;
+			
+			setResult({ similarity: similarityPercentage, isCorrect });
+			
+			if (isCorrect) {
+				new Notice(`✓ Correct! ${similarityPercentage}% match`, 5000);
 			} else {
-				new Notice(`Incorrect: ${similarityPercentage}% match`);
+				new Notice(`✗ Incorrect. ${similarityPercentage}% match`, 5000);
 			}
+			
 			setStatus("submitted");
 		} catch (error) {
+			console.error("Evaluation error:", error);
 			setStatus("answering");
-			new Notice((error as Error).message, 0);
+			new Notice(`Error: ${(error as Error).message}`, 5000);
 		}
+	};
+
+	const getResultClass = () => {
+		if (!result) return "";
+		return result.isCorrect ? "sr-result-correct" : "sr-result-incorrect";
+	};
+
+	const getResultText = () => {
+		if (!result) return "";
+		return result.isCorrect ? `✓ Correct (${result.similarity}% match)` : `✗ Incorrect (${result.similarity}% match)`;
 	};
 
 	return (
 		<div className="question-container-qg">
 			<div className="question-qg" ref={questionRef} />
+			
+			{/* Show evaluation result */}
+			{result && (
+				<div className={`sr-result ${getResultClass()}`}>
+					{getResultText()}
+				</div>
+			)}
+			
+			{/* Show correct answer */}
 			{status === "submitted" && (
 				<div className="answer-container-qg">
 					<div className="answer-label-qg">Correct Answer:</div>
 					<div className="answer-qg" ref={answerRef} />
 				</div>
 			)}
+			
 			<div className={status === "submitted" ? "input-container-qg" : "input-container-qg limit-height-qg"}>
-				<AnswerInput onSubmit={handleSubmit} clearInputOnSubmit={false} disabled={status !== "answering"} />
+				<AnswerInput 
+					onSubmit={handleSubmit} 
+					clearInputOnSubmit={false} 
+					disabled={status !== "answering"} 
+				/>
 				<div className="instruction-footnote-qg">
-					Press enter to submit your answer. Enter "skip" to reveal the answer.
+					{status === "evaluating" 
+						? "Evaluating..." 
+						: 'Press enter to submit your answer. Enter "skip" to reveal the answer.'}
 				</div>
 			</div>
 		</div>
