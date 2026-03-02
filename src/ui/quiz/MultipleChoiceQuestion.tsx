@@ -5,10 +5,18 @@ import { MultipleChoice } from "../../utils/types";
 interface MultipleChoiceQuestionProps {
 	app: App;
 	question: MultipleChoice;
+	revealAnswer?: boolean;
 }
 
-const MultipleChoiceQuestion = ({ app, question }: MultipleChoiceQuestionProps) => {
+const MultipleChoiceQuestion = ({ app, question, revealAnswer }: MultipleChoiceQuestionProps) => {
 	const [userAnswer, setUserAnswer] = useState<number | null>(null);
+	
+	// Show answer when revealAnswer prop is true
+	useEffect(() => {
+		if (revealAnswer && userAnswer === null) {
+			setUserAnswer(question.answer);
+		}
+	}, [revealAnswer, question.answer, userAnswer]);
 	const questionRef = useRef<HTMLDivElement>(null);
 	const buttonRefs = useRef<(HTMLButtonElement | null)[]>([]);
 

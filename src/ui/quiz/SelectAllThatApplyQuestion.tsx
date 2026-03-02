@@ -5,11 +5,20 @@ import { SelectAllThatApply } from "../../utils/types";
 interface SelectAllThatApplyQuestionProps {
 	app: App;
 	question: SelectAllThatApply;
+	revealAnswer?: boolean;
 }
 
-const SelectAllThatApplyQuestion = ({ app, question }: SelectAllThatApplyQuestionProps) => {
+const SelectAllThatApplyQuestion = ({ app, question, revealAnswer }: SelectAllThatApplyQuestionProps) => {
 	const [userAnswer, setUserAnswer] = useState<number[]>([]);
 	const [submitted, setSubmitted] = useState<boolean>(false);
+	
+	// Show answer when revealAnswer prop is true
+	useEffect(() => {
+		if (revealAnswer && !submitted) {
+			setUserAnswer(question.answer);
+			setSubmitted(true);
+		}
+	}, [revealAnswer, question.answer, submitted]);
 	const questionRef = useRef<HTMLDivElement>(null);
 	const buttonRefs = useRef<(HTMLButtonElement | null)[]>([]);
 

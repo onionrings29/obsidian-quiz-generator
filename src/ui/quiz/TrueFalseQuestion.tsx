@@ -5,10 +5,18 @@ import { TrueFalse } from "../../utils/types";
 interface TrueFalseQuestionProps {
 	app: App;
 	question: TrueFalse;
+	revealAnswer?: boolean;
 }
 
-const TrueFalseQuestion = ({ app, question }: TrueFalseQuestionProps) => {
+const TrueFalseQuestion = ({ app, question, revealAnswer }: TrueFalseQuestionProps) => {
 	const [userAnswer, setUserAnswer] = useState<boolean | null>(null);
+	
+	// Show answer when revealAnswer prop is true
+	useEffect(() => {
+		if (revealAnswer && userAnswer === null) {
+			setUserAnswer(question.answer);
+		}
+	}, [revealAnswer, question.answer, userAnswer]);
 	const questionRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {

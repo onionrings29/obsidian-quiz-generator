@@ -6,10 +6,18 @@ import AnswerInput from "../components/AnswerInput";
 interface FillInTheBlankQuestionProps {
 	app: App;
 	question: FillInTheBlank;
+	revealAnswer?: boolean;
 }
 
-const FillInTheBlankQuestion = ({ app, question }: FillInTheBlankQuestionProps) => {
+const FillInTheBlankQuestion = ({ app, question, revealAnswer }: FillInTheBlankQuestionProps) => {
 	const [filledBlanks, setFilledBlanks] = useState<string[]>(Array(question.answer.length).fill(""));
+	
+	// Show answer when revealAnswer prop is true
+	useEffect(() => {
+		if (revealAnswer && !filledBlanks.every(blank => blank.length > 0)) {
+			setFilledBlanks(question.answer);
+		}
+	}, [revealAnswer, question.answer, filledBlanks]);
 	const questionRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {

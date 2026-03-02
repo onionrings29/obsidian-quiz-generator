@@ -86,17 +86,17 @@ const QuizModal = ({ app, settings, quiz, quizSaver, reviewing, handleClose, srS
 	const renderQuestion = () => {
 		const question = quiz[questionIndex];
 		if (isTrueFalse(question)) {
-			return <TrueFalseQuestion key={questionIndex} app={app} question={question} />;
+			return <TrueFalseQuestion key={questionIndex} app={app} question={question} revealAnswer={showAnswer} />;
 		} else if (isMultipleChoice(question)) {
-			return <MultipleChoiceQuestion key={questionIndex} app={app} question={question} />;
+			return <MultipleChoiceQuestion key={questionIndex} app={app} question={question} revealAnswer={showAnswer} />;
 		} else if (isSelectAllThatApply(question)) {
-			return <SelectAllThatApplyQuestion key={questionIndex} app={app} question={question} />;
+			return <SelectAllThatApplyQuestion key={questionIndex} app={app} question={question} revealAnswer={showAnswer} />;
 		} else if (isFillInTheBlank(question)) {
-			return <FillInTheBlankQuestion key={questionIndex} app={app} question={question} />;
+			return <FillInTheBlankQuestion key={questionIndex} app={app} question={question} revealAnswer={showAnswer} />;
 		} else if (isMatching(question)) {
-			return <MatchingQuestion key={questionIndex} app={app} question={question} />;
+			return <MatchingQuestion key={questionIndex} app={app} question={question} revealAnswer={showAnswer} />;
 		} else if (isShortOrLongAnswer(question)) {
-			return <ShortOrLongAnswerQuestion key={questionIndex} app={app} question={question} settings={settings} />;
+			return <ShortOrLongAnswerQuestion key={questionIndex} app={app} question={question} settings={settings} revealAnswer={showAnswer} />;
 		}
 	};
 

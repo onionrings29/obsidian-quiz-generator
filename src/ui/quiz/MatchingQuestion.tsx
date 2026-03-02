@@ -6,9 +6,10 @@ import { shuffleArray } from "../../utils/helpers";
 interface MatchingQuestionProps {
 	app: App;
 	question: Matching;
+	revealAnswer?: boolean;
 }
 
-const MatchingQuestion = ({ app, question }: MatchingQuestionProps) => {
+const MatchingQuestion = ({ app, question, revealAnswer }: MatchingQuestionProps) => {
 	const [selectedLeft, setSelectedLeft] = useState<number | null>(null);
 	const [selectedRight, setSelectedRight] = useState<number | null>(null);
 	const [selectedPairs, setSelectedPairs] = useState<{ leftIndex: number, rightIndex: number }[]>([]);
@@ -33,6 +34,22 @@ const MatchingQuestion = ({ app, question }: MatchingQuestionProps) => {
 			return acc;
 		}, new Map<number, number>());
 	}, [question, leftOptions, rightOptions]);
+
+	// Show answer when revealAnswer prop is true
+	useEffect(() => {
+		if (revealAnswer && status === "answering") {
+			// Build correct pairs
+			const correctPairs: { leftIndex: number, rightIndex: number }[] = [];
+			leftOptions.forEach((_, leftIndex) => {
+				const rightIndex = correctPairsMap.get(leftIndex);
+				if (rightIndex !== undefined) {
+					correctPairs.push({ leftIndex, rightIndex });
+				}
+			});
+			setSelectedPairs(correctPairs);
+			setStatus("reviewing");
+		}
+	}, [revealAnswer, status, leftOptions, correctPairsMap]);
 
 	const questionRef = useRef<HTMLDivElement>(null);
 	const buttonRefs = useRef<(HTMLButtonElement | null)[]>([]);
