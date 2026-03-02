@@ -29,29 +29,54 @@ export default class OllamaGenerator extends Generator {
 
 	public async shortOrLongAnswerSimilarity(userAnswer: string, answer: string): Promise<number> {
 		try {
-			const response = await this.ollama.embed({
-				model: this.settings.ollamaEmbeddingModel,
-				input: [userAnswer, answer],
+			// llama.cpp embedding API endpoint
+			const response = await fetch(`${this.settings.ollamaBaseURL}/embedding`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					content: userAnswer,
+				}),
 			});
 
-			// Handle different response formats from Ollama
-			const embeddings = response.embeddings;
-			if (!Array.isArray(embeddings) || embeddings.length < 2) {
-				throw new Error("Invalid embedding response from Ollama");
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
 			}
 
-			const userEmbedding = embeddings[0];
-			const correctEmbedding = embeddings[1];
+			const userResult = await response.json();
+			
+			// Get embedding for correct answer
+			const correctResponse = await fetch(`${this.settings.ollamaBaseURL}/embedding`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					content: answer,
+				}),
+			});
 
-			// Ensure embeddings are arrays of numbers
+			if (!correctResponse.ok) {
+				throw new Error(`HTTP error! status: ${correctResponse.status}`);
+			}
+
+			const correctResult = await correctResponse.json();
+
+			// llama.cpp returns embedding as an array in the response
+			const userEmbedding = userResult.embedding;
+			const correctEmbedding = correctResult.embedding;
+
 			if (!Array.isArray(userEmbedding) || !Array.isArray(correctEmbedding)) {
-				throw new Error("Invalid embedding format from Ollama");
+				console.error("Invalid embedding format:", { userResult, correctResult });
+				throw new Error("Invalid embedding format from server");
 			}
 
 			return cosineSimilarity(userEmbedding, correctEmbedding);
 		} catch (error) {
 			console.error("Embedding error:", error);
-			throw new Error(`Embedding failed: ${(error as Error).message}`);
+			// Fallback: return 0 similarity if embedding fails
+			return 0;
 		}
 	}
 }
