@@ -39,14 +39,50 @@ export default class OpenAIGenerator extends Generator {
 
 	public async shortOrLongAnswerSimilarity(userAnswer: string, answer: string): Promise<number> {
 		try {
-			const embedding = await this.openai.embeddings.create({
-				model: this.settings.openAIEmbeddingModel,
-				input: [userAnswer, answer],
+			// Use native fetch for better compatibility with llama.cpp and other OpenAI-compatible servers
+			const headers: Record<string, string> = {
+				"Content-Type": "application/json",
+			};
+			
+			if (this.settings.openAIApiKey) {
+				headers["Authorization"] = `Bearer ${this.settings.openAIApiKey}`;
+			}
+
+			const response = await fetch(`${this.settings.openAIBaseURL}/v1/embeddings`, {
+				method: "POST",
+				headers,
+				body: JSON.stringify({
+					model: this.settings.openAIEmbeddingModel,
+					input: [userAnswer, answer],
+				}),
 			});
 
-			return cosineSimilarity(embedding.data[0].embedding, embedding.data[1].embedding);
+			if (!response.ok) {
+				const errorText = await response.text();
+				console.error("Embedding API error:", response.status, errorText);
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+
+			const result = await response.json();
+			
+			// Validate response format
+			if (!result.data || !Array.isArray(result.data) || result.data.length < 2) {
+				console.error("Invalid embedding response:", result);
+				throw new Error("Invalid embedding response format");
+			}
+
+			const embedding1 = result.data[0].embedding;
+			const embedding2 = result.data[1].embedding;
+
+			if (!Array.isArray(embedding1) || !Array.isArray(embedding2)) {
+				console.error("Invalid embedding format:", { embedding1, embedding2 });
+				throw new Error("Invalid embedding format");
+			}
+
+			return cosineSimilarity(embedding1, embedding2);
 		} catch (error) {
-			throw new Error((error as Error).message);
+			console.error("Embedding error:", error);
+			throw error;
 		}
 	}
 }

@@ -49,10 +49,20 @@ const ShortOrLongAnswerQuestion = ({ app, question, settings, revealAnswer }: Sh
 
 		try {
 			setStatus("evaluating");
-			new Notice("Evaluating answer...", 2000);
+			new Notice("Evaluating answer... (this may take 10-20 seconds)", 3000);
 			
 			const generator = GeneratorFactory.createInstance(settings);
-			const similarity = await generator.shortOrLongAnswerSimilarity(input.trim(), question.answer);
+			
+			// Add timeout to prevent indefinite hanging
+			const timeoutPromise = new Promise<never>((_, reject) => 
+				setTimeout(() => reject(new Error("Evaluation timed out (30s). The embedding model may be slow.")), 30000)
+			);
+			
+			const similarity = await Promise.race([
+				generator.shortOrLongAnswerSimilarity(input.trim(), question.answer),
+				timeoutPromise
+			]);
+			
 			const similarityPercentage = Math.round(similarity * 100);
 			const isCorrect = similarityPercentage >= 80;
 			
@@ -109,7 +119,7 @@ const ShortOrLongAnswerQuestion = ({ app, question, settings, revealAnswer }: Sh
 				/>
 				<div className="instruction-footnote-qg">
 					{status === "evaluating" 
-						? "Evaluating..." 
+						? "Evaluating... (may take 10-20s with slow embedding models)" 
 						: 'Press enter to submit your answer. Enter "skip" to reveal the answer.'}
 				</div>
 			</div>
