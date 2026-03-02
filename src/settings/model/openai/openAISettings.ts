@@ -1,6 +1,6 @@
-import { Setting } from "obsidian";
+import { Notice, Setting } from "obsidian";
 import QuizGenerator from "../../../main";
-import { openAIEmbeddingModels, openAITextGenModels } from "../../../generators/openai/openAIModels";
+import { getOpenAIEmbeddingModels, getOpenAITextGenModels } from "../../../generators/openai/openAIModels";
 import { DEFAULT_OPENAI_SETTINGS } from "./openAIConfig";
 
 const displayOpenAISettings = (containerEl: HTMLElement, plugin: QuizGenerator, refreshSettings: () => void): void => {
@@ -42,28 +42,54 @@ const displayOpenAISettings = (containerEl: HTMLElement, plugin: QuizGenerator, 
 	new Setting(containerEl)
 		.setName("Generation model")
 		.setDesc("Model used for quiz generation.")
-		.addDropdown(dropdown =>
+		.addButton(button =>
+			button
+				.setClass("clickable-icon")
+				.setIcon("refresh-cw")
+				.setTooltip("Refresh models")
+				.onClick(() => refreshSettings())
+		)
+		.addDropdown(async (dropdown) => {
+			const models = await getOpenAITextGenModels(plugin.settings.openAIBaseURL, plugin.settings.openAIApiKey);
+			const noModelsAvailable = Object.keys(models).length === 0;
+			if (noModelsAvailable) {
+				new Notice("No models found. Check your API key and base URL.");
+			}
 			dropdown
-				.addOptions(openAITextGenModels)
+				.addOptions(models)
 				.setValue(plugin.settings.openAITextGenModel)
 				.onChange(async (value) => {
 					plugin.settings.openAITextGenModel = value;
 					await plugin.saveSettings();
 				})
-		);
+				.setDisabled(noModelsAvailable);
+		});
 
 	new Setting(containerEl)
 		.setName("Embedding model")
 		.setDesc("Model used for evaluating short and long answer questions.")
-		.addDropdown(dropdown =>
+		.addButton(button =>
+			button
+				.setClass("clickable-icon")
+				.setIcon("refresh-cw")
+				.setTooltip("Refresh models")
+				.onClick(() => refreshSettings())
+		)
+		.addDropdown(async (dropdown) => {
+			const models = await getOpenAIEmbeddingModels(plugin.settings.openAIBaseURL, plugin.settings.openAIApiKey);
+			const noModelsAvailable = Object.keys(models).length === 0;
+			if (noModelsAvailable) {
+				new Notice("No embedding models found. Check your API key and base URL.");
+			}
 			dropdown
-				.addOptions(openAIEmbeddingModels)
+				.addOptions(models)
 				.setValue(plugin.settings.openAIEmbeddingModel)
 				.onChange(async (value) => {
 					plugin.settings.openAIEmbeddingModel = value;
 					await plugin.saveSettings();
 				})
-		);
+				.setDisabled(noModelsAvailable);
+		});
 };
 
 export default displayOpenAISettings;
