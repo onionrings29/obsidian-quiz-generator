@@ -7,9 +7,10 @@ interface MatchingQuestionProps {
 	app: App;
 	question: Matching;
 	revealAnswer?: boolean;
+	onSubmit?: () => void;
 }
 
-const MatchingQuestion = ({ app, question, revealAnswer }: MatchingQuestionProps) => {
+const MatchingQuestion = ({ app, question, revealAnswer, onSubmit }: MatchingQuestionProps) => {
 	const [selectedLeft, setSelectedLeft] = useState<number | null>(null);
 	const [selectedRight, setSelectedRight] = useState<number | null>(null);
 	const [selectedPairs, setSelectedPairs] = useState<{ leftIndex: number, rightIndex: number }[]>([]);
@@ -221,7 +222,14 @@ const MatchingQuestion = ({ app, question, revealAnswer }: MatchingQuestionProps
 			</div>
 			<button
 				className="submit-answer-qg"
-				onClick={() => setStatus(status === "answering" ? "submitted" : "reviewing")}
+				onClick={() => {
+					if (status === "answering") {
+						setStatus("submitted");
+						onSubmit?.();
+					} else {
+						setStatus("reviewing");
+					}
+				}}
 				disabled={
 					selectedPairs.length !== question.answer.length ||
 					status === "reviewing" ||

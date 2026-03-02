@@ -10,9 +10,10 @@ interface ShortOrLongAnswerQuestionProps {
 	question: ShortOrLongAnswer;
 	settings: QuizSettings;
 	revealAnswer?: boolean;
+	onSubmit?: () => void;
 }
 
-const ShortOrLongAnswerQuestion = ({ app, question, settings, revealAnswer }: ShortOrLongAnswerQuestionProps) => {
+const ShortOrLongAnswerQuestion = ({ app, question, settings, revealAnswer, onSubmit }: ShortOrLongAnswerQuestionProps) => {
 	const [status, setStatus] = useState<"answering" | "evaluating" | "submitted">("answering");
 	
 	// Show answer when revealAnswer prop is true
@@ -21,6 +22,13 @@ const ShortOrLongAnswerQuestion = ({ app, question, settings, revealAnswer }: Sh
 			setStatus("submitted");
 		}
 	}, [revealAnswer, status]);
+
+	// Notify parent when submitted
+	useEffect(() => {
+		if (status === "submitted") {
+			onSubmit?.();
+		}
+	}, [status, onSubmit]);
 	const component = useMemo<Component>(() => new Component(), []);
 	const questionRef = useRef<HTMLDivElement>(null);
 	const answerRef = useRef<HTMLButtonElement>(null);

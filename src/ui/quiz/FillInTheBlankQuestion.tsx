@@ -7,9 +7,10 @@ interface FillInTheBlankQuestionProps {
 	app: App;
 	question: FillInTheBlank;
 	revealAnswer?: boolean;
+	onSubmit?: () => void;
 }
 
-const FillInTheBlankQuestion = ({ app, question, revealAnswer }: FillInTheBlankQuestionProps) => {
+const FillInTheBlankQuestion = ({ app, question, revealAnswer, onSubmit }: FillInTheBlankQuestionProps) => {
 	const [filledBlanks, setFilledBlanks] = useState<string[]>(Array(question.answer.length).fill(""));
 	
 	// Show answer when revealAnswer prop is true
@@ -18,6 +19,13 @@ const FillInTheBlankQuestion = ({ app, question, revealAnswer }: FillInTheBlankQ
 			setFilledBlanks(question.answer);
 		}
 	}, [revealAnswer, question.answer, filledBlanks]);
+
+	// Notify parent when all blanks are filled
+	useEffect(() => {
+		if (filledBlanks.every(blank => blank.length > 0)) {
+			onSubmit?.();
+		}
+	}, [filledBlanks, onSubmit]);
 	const questionRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
