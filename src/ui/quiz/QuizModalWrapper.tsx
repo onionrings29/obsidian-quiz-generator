@@ -3,6 +3,7 @@ import { QuizSettings } from "../../settings/config";
 import { Question } from "../../utils/types";
 import QuizModal from "./QuizModal";
 import QuizSaver from "../../services/quizSaver";
+import { SpacedRepetitionService } from "../../services/spacedRepetition/spacedRepetition";
 
 interface QuizModalWrapperProps {
 	app: App;
@@ -11,9 +12,10 @@ interface QuizModalWrapperProps {
 	quizSaver: QuizSaver;
 	reviewing: boolean;
 	handleClose: () => void;
+	srService?: SpacedRepetitionService;
 }
 
-const QuizModalWrapper = ({ app, settings, quiz, quizSaver, reviewing, handleClose }: QuizModalWrapperProps) => {
+const QuizModalWrapper = ({ app, settings, quiz, quizSaver, reviewing, handleClose, srService }: QuizModalWrapperProps) => {
 	return <QuizModal
 		app={app}
 		settings={settings}
@@ -21,6 +23,7 @@ const QuizModalWrapper = ({ app, settings, quiz, quizSaver, reviewing, handleClo
 		quizSaver={quizSaver}
 		reviewing={reviewing}
 		handleClose={handleClose}
+		srService={srService}
 	/>;
 };
 

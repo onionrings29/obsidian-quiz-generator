@@ -5,6 +5,7 @@ import { Question } from "../../utils/types";
 import QuizSaver from "../../services/quizSaver";
 import QuizModalWrapper from "./QuizModalWrapper";
 import { shuffleArray } from "../../utils/helpers";
+import { SpacedRepetitionService } from "../../services/spacedRepetition/spacedRepetition";
 
 export default class QuizModalLogic {
 	private readonly app: App;
@@ -12,15 +13,17 @@ export default class QuizModalLogic {
 	private readonly quiz: Question[];
 	private readonly quizSources: TFile[];
 	private readonly quizSaver: QuizSaver;
+	private readonly srService?: SpacedRepetitionService;
 	private container: HTMLDivElement | undefined;
 	private root: Root | undefined;
 	private readonly handleEscapePressed: (event: KeyboardEvent) => void;
 
-	constructor(app: App, settings: QuizSettings, quiz: Question[], quizSources: TFile[]) {
+	constructor(app: App, settings: QuizSettings, quiz: Question[], quizSources: TFile[], srService?: SpacedRepetitionService) {
 		this.app = app;
 		this.settings = settings;
 		this.quiz = quiz;
 		this.quizSources = quizSources;
+		this.srService = srService;
 		this.quizSaver = new QuizSaver(this.app, this.settings, this.quizSources);
 		this.handleEscapePressed = (event: KeyboardEvent): void => {
 			if (event.key === "Escape" && !(event.target instanceof HTMLInputElement)) {
@@ -45,6 +48,7 @@ export default class QuizModalLogic {
 			quizSaver: this.quizSaver,
 			reviewing: this.quizSources.length === 0,
 			handleClose: () => this.removeQuiz(),
+			srService: this.srService,
 		}));
 		document.body.addEventListener("keydown", this.handleEscapePressed);
 	}

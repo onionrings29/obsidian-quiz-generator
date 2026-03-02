@@ -18,6 +18,7 @@ import FillInTheBlankQuestion from "./FillInTheBlankQuestion";
 import MatchingQuestion from "./MatchingQuestion";
 import ShortOrLongAnswerQuestion from "./ShortOrLongAnswerQuestion";
 import QuizSaver from "../../services/quizSaver";
+import { DifficultyRating, SpacedRepetitionService } from "../../services/spacedRepetition/spacedRepetition";
 
 interface QuizModalProps {
 	app: App;
@@ -26,11 +27,13 @@ interface QuizModalProps {
 	quizSaver: QuizSaver;
 	reviewing: boolean;
 	handleClose: () => void;
+	srService?: SpacedRepetitionService;
 }
 
-const QuizModal = ({ app, settings, quiz, quizSaver, reviewing, handleClose }: QuizModalProps) => {
+const QuizModal = ({ app, settings, quiz, quizSaver, reviewing, handleClose, srService }: QuizModalProps) => {
 	const [questionIndex, setQuestionIndex] = useState<number>(0);
 	const [savedQuestions, setSavedQuestions] = useState<boolean[]>(Array(quiz.length).fill(reviewing));
+	const [showAnswer, setShowAnswer] = useState<boolean>(false);
 
 	const handlePreviousQuestion = () => {
 		if (questionIndex > 0) {
@@ -55,7 +58,29 @@ const QuizModal = ({ app, settings, quiz, quizSaver, reviewing, handleClose }: Q
 	const handleNextQuestion = () => {
 		if (questionIndex < quiz.length - 1) {
 			setQuestionIndex(questionIndex + 1);
+			setShowAnswer(false);
 		}
+	};
+
+	const handleRateDifficulty = async (rating: DifficultyRating) => {
+		if (srService) {
+			const currentQuestion = quiz[questionIndex];
+			const cardId = srService.getCardId(currentQuestion.question);
+			await srService.processReview(cardId, currentQuestion.question, rating);
+		}
+		setShowAnswer(false);
+		handleNextQuestion();
+	};
+
+	const handleShowAnswer = () => {
+		setShowAnswer(true);
+	};
+
+	const getNextReviewText = (rating: DifficultyRating): string => {
+		if (!srService) return "";
+		const currentQuestion = quiz[questionIndex];
+		const cardId = srService.getCardId(currentQuestion.question);
+		return srService.getNextReviewText(rating, cardId);
 	};
 
 	const renderQuestion = () => {
@@ -112,6 +137,51 @@ const QuizModal = ({ app, settings, quiz, quizSaver, reviewing, handleClose }: Q
 					</div>
 					<hr className="quiz-divider-qg" />
 					{renderQuestion()}
+					
+					{/* Spaced Repetition Controls */}
+					{srService && (
+						<div className="sr-controls-qg">
+							{!showAnswer ? (
+								<button 
+									className="sr-show-answer-btn"
+									onClick={handleShowAnswer}
+								>
+									Show Answer
+								</button>
+							) : (
+								<div className="sr-difficulty-buttons">
+									<button 
+										className="sr-btn sr-btn-again"
+										onClick={() => handleRateDifficulty(DifficultyRating.AGAIN)}
+									>
+										<div className="sr-btn-label">Again</div>
+										<div className="sr-btn-interval">{getNextReviewText(DifficultyRating.AGAIN)}</div>
+									</button>
+									<button 
+										className="sr-btn sr-btn-hard"
+										onClick={() => handleRateDifficulty(DifficultyRating.HARD)}
+									>
+										<div className="sr-btn-label">Hard</div>
+										<div className="sr-btn-interval">{getNextReviewText(DifficultyRating.HARD)}</div>
+									</button>
+									<button 
+										className="sr-btn sr-btn-good"
+										onClick={() => handleRateDifficulty(DifficultyRating.GOOD)}
+									>
+										<div className="sr-btn-label">Good</div>
+										<div className="sr-btn-interval">{getNextReviewText(DifficultyRating.GOOD)}</div>
+									</button>
+									<button 
+										className="sr-btn sr-btn-easy"
+										onClick={() => handleRateDifficulty(DifficultyRating.EASY)}
+									>
+										<div className="sr-btn-label">Easy</div>
+										<div className="sr-btn-interval">{getNextReviewText(DifficultyRating.EASY)}</div>
+									</button>
+								</div>
+							)}
+						</div>
+					)}
 				</div>
 			</div>
 		</div>

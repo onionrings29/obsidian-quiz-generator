@@ -1,6 +1,7 @@
 import { App, Notice, TFile } from "obsidian";
 import { QuizSettings } from "../../settings/config";
 import { DeckMode } from "../../settings/general/generalConfig";
+import { DifficultyRating, SpacedRepetitionService } from "../spacedRepetition/spacedRepetition";
 import {
 	FillInTheBlank,
 	Matching,
@@ -38,10 +39,19 @@ export class DeckReviewer {
 	private readonly app: App;
 	private readonly settings: QuizSettings;
 	private decks: Deck[] = [];
+	private srService: SpacedRepetitionService;
 
 	constructor(app: App, settings: QuizSettings) {
 		this.app = app;
 		this.settings = settings;
+		this.srService = new SpacedRepetitionService(app, settings);
+	}
+
+	/**
+	 * Initialize the spaced repetition service
+	 */
+	public async initialize(): Promise<void> {
+		await this.srService.loadData();
 	}
 
 	/**
@@ -114,19 +124,39 @@ export class DeckReviewer {
 	/**
 	 * Start a review session for a specific deck
 	 */
-	public async reviewDeck(deck: Deck): Promise<void> {
-		const questions = this.getAllQuestionsFromDeck(deck);
+	public async reviewDeck(deck: Deck, dueOnly: boolean = false): Promise<void> {
+		let questions = this.getAllQuestionsFromDeck(deck);
+
+		if (dueOnly) {
+			// Filter for due cards only
+			questions = questions.filter(q => this.srService.isDue(this.srService.getCardId(q.question)));
+		}
 
 		if (questions.length === 0) {
-			new Notice(`No questions found in deck "${deck.name}"`);
+			new Notice(`No questions found in deck "${deck.name}"${dueOnly ? " that are due" : ""}`);
 			return;
 		}
 
 		// Convert to Question format expected by QuizModalLogic
 		const quizQuestions: Question[] = questions.map(q => this.convertToQuestion(q));
 
-		// Open quiz modal
-		await new QuizModalLogic(this.app, this.settings, quizQuestions, []).renderQuiz();
+		// Open quiz modal with spaced repetition enabled
+		await new QuizModalLogic(this.app, this.settings, quizQuestions, [], this.srService).renderQuiz();
+	}
+
+	/**
+	 * Get the spaced repetition service
+	 */
+	public getSRService(): SpacedRepetitionService {
+		return this.srService;
+	}
+
+	/**
+	 * Get count of due cards in a deck
+	 */
+	public getDueCount(deck: Deck): number {
+		const allQuestions = this.getAllQuestionsFromDeck(deck);
+		return allQuestions.filter(q => this.srService.isDue(this.srService.getCardId(q.question))).length;
 	}
 
 	/**

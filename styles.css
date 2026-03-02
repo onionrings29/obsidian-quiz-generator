@@ -404,11 +404,6 @@ FillInTheBlankQuestion, MatchingQuestion, ShortOrLongAnswerQuestion */
 }
 
 .deck-item-action {
-	opacity: 0;
-	transition: opacity 0.15s ease;
-}
-
-.deck-item:hover .deck-item-action {
 	opacity: 1;
 }
 
@@ -421,4 +416,100 @@ FillInTheBlankQuestion, MatchingQuestion, ShortOrLongAnswerQuestion */
 	padding: 1rem;
 	border-top: 1px solid var(--background-modifier-border);
 	text-align: center;
+}
+
+/* Spaced Repetition Controls */
+.sr-controls-qg {
+	margin-top: auto;
+	padding-top: 1rem;
+	border-top: 1px solid var(--background-modifier-border);
+}
+
+.sr-show-answer-btn {
+	width: 100%;
+	padding: 1rem;
+	font-size: 1.1em;
+	background-color: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border: none;
+	border-radius: 0.5rem;
+	cursor: pointer;
+	transition: background-color 0.2s ease;
+}
+
+.sr-show-answer-btn:hover {
+	background-color: var(--interactive-accent-hover);
+}
+
+.sr-difficulty-buttons {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 0.5rem;
+}
+
+.sr-btn {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 0.75rem 0.5rem;
+	border: 2px solid;
+	border-radius: 0.5rem;
+	background-color: transparent;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.sr-btn:hover {
+	transform: translateY(-2px);
+}
+
+.sr-btn-label {
+	font-weight: var(--font-bold);
+	font-size: 0.9em;
+}
+
+.sr-btn-interval {
+	font-size: 0.75em;
+	opacity: 0.8;
+	margin-top: 0.25rem;
+}
+
+.sr-btn-again {
+	border-color: var(--color-red);
+	color: var(--color-red);
+}
+
+.sr-btn-again:hover {
+	background-color: var(--color-red);
+	color: var(--text-on-accent);
+}
+
+.sr-btn-hard {
+	border-color: var(--color-orange);
+	color: var(--color-orange);
+}
+
+.sr-btn-hard:hover {
+	background-color: var(--color-orange);
+	color: var(--text-on-accent);
+}
+
+.sr-btn-good {
+	border-color: var(--color-blue);
+	color: var(--color-blue);
+}
+
+.sr-btn-good:hover {
+	background-color: var(--color-blue);
+	color: var(--text-on-accent);
+}
+
+.sr-btn-easy {
+	border-color: var(--color-green);
+	color: var(--color-green);
+}
+
+.sr-btn-easy:hover {
+	background-color: var(--color-green);
+	color: var(--text-on-accent);
 }

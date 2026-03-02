@@ -25,6 +25,9 @@ export class DeckSelectorModal extends Modal {
 		// Show loading state
 		this.renderLoadingState();
 
+		// Initialize deck reviewer with spaced repetition
+		await this.deckReviewer.initialize();
+
 		// Scan vault for decks
 		this.decks = await this.deckReviewer.scanVault();
 		this.isLoading = false;
@@ -59,14 +62,24 @@ export class DeckSelectorModal extends Modal {
 		// Header with stats
 		const headerContainer = contentEl.createDiv({ cls: "deck-header" });
 		const totalQuestions = this.deckReviewer.getTotalQuestionCount();
+		
+		// Calculate total due across all decks
+		let totalDue = 0;
+		for (const deck of this.decks) {
+			totalDue += this.deckReviewer.getDueCount(deck);
+		}
+		
+		const statsText = totalDue > 0 
+			? `Found ${this.decks.length} deck(s) with ${totalDue} due / ${totalQuestions} total`
+			: `Found ${this.decks.length} deck(s) with ${totalQuestions} question(s)`;
 
 		headerContainer.createEl("p", {
-			text: `Found ${this.decks.length} deck(s) with ${totalQuestions} question(s)`,
+			text: statsText,
 			cls: "deck-stats"
 		});
 
-		// Refresh button
-		new Setting(headerContainer)
+		// Refresh button and Review All Due button
+		const headerSetting = new Setting(headerContainer)
 			.addButton(button =>
 				button
 					.setButtonText("Refresh")
@@ -74,11 +87,50 @@ export class DeckSelectorModal extends Modal {
 					.onClick(async () => {
 						this.isLoading = true;
 						this.renderLoadingState();
+						await this.deckReviewer.initialize();
 						this.decks = await this.deckReviewer.scanVault();
 						this.isLoading = false;
 						this.renderDeckList();
 					})
 			);
+		
+		// Add Review All Due button if there are due cards
+		if (totalDue > 0) {
+			headerSetting.addButton(button =>
+				button
+					.setButtonText(`Review All Due (${totalDue})`)
+					.setTooltip("Review all due cards across all decks")
+					.setCta()
+					.onClick(() => {
+						this.close();
+						// Review all decks with due cards
+						const allQuestions = this.deckReviewer.getAllQuestionsFromDeck({
+							id: "all",
+							name: "All",
+							path: "all",
+							questions: [],
+							subDecks: this.decks,
+							questionCount: 0
+						}).filter(q => this.deckReviewer.getSRService().isDue(this.deckReviewer.getSRService().getCardId(q.question)));
+						
+						// Convert and open quiz
+						const quizQuestions = allQuestions.map(q => {
+							const question: any = {
+								question: q.question,
+								answer: q.answer,
+							};
+							if (q.options) question.options = q.options;
+							if (q.leftOptions) question.leftOptions = q.leftOptions;
+							if (q.rightOptions) question.rightOptions = q.rightOptions;
+							return question;
+						});
+						
+						import("../../ui/quiz/quizModalLogic").then(({ default: QuizModalLogic }) => {
+							new QuizModalLogic(this.app, this.settings, quizQuestions, [], this.deckReviewer.getSRService()).renderQuiz();
+						});
+					})
+			);
+		}
 
 		// Deck list
 		const listContainer = contentEl.createDiv({ cls: "deck-list-container" });
@@ -139,10 +191,18 @@ export class DeckSelectorModal extends Modal {
 			text: deck.name
 		});
 
+		const totalCount = this.deckReviewer.getDeckQuestionCount(deck);
+		const dueCount = this.deckReviewer.getDueCount(deck);
+		
 		const countEl = infoEl.createSpan({
 			cls: "deck-item-count",
-			text: `(${this.deckReviewer.getDeckQuestionCount(deck)})`
+			text: `(${dueCount} due / ${totalCount} total)`
 		});
+		
+		if (dueCount > 0) {
+			countEl.style.color = "var(--color-green)";
+			countEl.style.fontWeight = "bold";
+		}
 
 		// Click to select
 		deckEl.addEventListener("click", () => {
@@ -158,17 +218,35 @@ export class DeckSelectorModal extends Modal {
 			}
 		});
 
-		// Add review button directly on the item
+		// Add review buttons directly on the item
 		const actionEl = deckEl.createDiv({ cls: "deck-item-action" });
-		if (deck.questions.length > 0 || deck.subDecks.length > 0) {
+		
+		// Review Due button (if there are due cards)
+		if (dueCount > 0) {
+			const reviewDueBtn = actionEl.createEl("button", {
+				text: `Review ${dueCount}`,
+				cls: "deck-review-btn deck-review-due-btn"
+			});
+			reviewDueBtn.style.backgroundColor = "var(--interactive-accent)";
+			reviewDueBtn.style.color = "var(--text-on-accent)";
+			reviewDueBtn.style.marginRight = "0.5rem";
+			reviewDueBtn.addEventListener("click", (e) => {
+				e.stopPropagation();
+				this.close();
+				this.deckReviewer.reviewDeck(deck, true);
+			});
+		}
+		
+		// Review All button
+		if (totalCount > 0) {
 			const reviewBtn = actionEl.createEl("button", {
-				text: "Review",
+				text: "All",
 				cls: "deck-review-btn"
 			});
 			reviewBtn.addEventListener("click", (e) => {
 				e.stopPropagation();
 				this.close();
-				this.deckReviewer.reviewDeck(deck);
+				this.deckReviewer.reviewDeck(deck, false);
 			});
 		}
 	}
