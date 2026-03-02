@@ -6,10 +6,9 @@ interface SelectAllThatApplyQuestionProps {
 	app: App;
 	question: SelectAllThatApply;
 	revealAnswer?: boolean;
-	onSubmit?: () => void;
 }
 
-const SelectAllThatApplyQuestion = ({ app, question, revealAnswer, onSubmit }: SelectAllThatApplyQuestionProps) => {
+const SelectAllThatApplyQuestion = ({ app, question, revealAnswer }: SelectAllThatApplyQuestionProps) => {
 	const [userAnswer, setUserAnswer] = useState<number[]>([]);
 	const [submitted, setSubmitted] = useState<boolean>(false);
 	
@@ -20,11 +19,6 @@ const SelectAllThatApplyQuestion = ({ app, question, revealAnswer, onSubmit }: S
 			setSubmitted(true);
 		}
 	}, [revealAnswer, question.answer, submitted]);
-
-	const handleSubmit = () => {
-		setSubmitted(true);
-		onSubmit?.();
-	};
 	const questionRef = useRef<HTMLDivElement>(null);
 	const buttonRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
@@ -84,7 +78,7 @@ const SelectAllThatApplyQuestion = ({ app, question, revealAnswer, onSubmit }: S
 			</div>
 			<button
 				className="submit-answer-qg"
-				onClick={handleSubmit}
+				onClick={() => setSubmitted(true)}
 				disabled={!userAnswer.length || submitted}
 			>
 				Submit

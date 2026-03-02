@@ -34,7 +34,6 @@ const QuizModal = ({ app, settings, quiz, quizSaver, reviewing, handleClose, srS
 	const [questionIndex, setQuestionIndex] = useState<number>(0);
 	const [savedQuestions, setSavedQuestions] = useState<boolean[]>(Array(quiz.length).fill(reviewing));
 	const [showAnswer, setShowAnswer] = useState<boolean>(false);
-	const [submitted, setSubmitted] = useState<boolean>(false);
 
 	const handlePreviousQuestion = () => {
 		if (questionIndex > 0) {
@@ -60,7 +59,6 @@ const QuizModal = ({ app, settings, quiz, quizSaver, reviewing, handleClose, srS
 		if (questionIndex < quiz.length - 1) {
 			setQuestionIndex(questionIndex + 1);
 			setShowAnswer(false);
-			setSubmitted(false);
 		}
 	};
 
@@ -85,15 +83,7 @@ const QuizModal = ({ app, settings, quiz, quizSaver, reviewing, handleClose, srS
 		return srService.getNextReviewText(rating, cardId);
 	};
 
-	// Check if current question type requires internal submission (has Submit button)
-	const currentQuestionRequiresSubmit = () => {
-		const question = quiz[questionIndex];
-		return isSelectAllThatApply(question) || isMatching(question);
-	};
 
-	const handleQuestionSubmit = () => {
-		setSubmitted(true);
-	};
 
 	const renderQuestion = () => {
 		const question = quiz[questionIndex];
@@ -102,13 +92,13 @@ const QuizModal = ({ app, settings, quiz, quizSaver, reviewing, handleClose, srS
 		} else if (isMultipleChoice(question)) {
 			return <MultipleChoiceQuestion key={questionIndex} app={app} question={question} revealAnswer={showAnswer} />;
 		} else if (isSelectAllThatApply(question)) {
-			return <SelectAllThatApplyQuestion key={questionIndex} app={app} question={question} revealAnswer={showAnswer} onSubmit={handleQuestionSubmit} />;
+			return <SelectAllThatApplyQuestion key={questionIndex} app={app} question={question} revealAnswer={showAnswer} />;
 		} else if (isFillInTheBlank(question)) {
-			return <FillInTheBlankQuestion key={questionIndex} app={app} question={question} revealAnswer={showAnswer} onSubmit={handleQuestionSubmit} />;
+			return <FillInTheBlankQuestion key={questionIndex} app={app} question={question} revealAnswer={showAnswer} />;
 		} else if (isMatching(question)) {
-			return <MatchingQuestion key={questionIndex} app={app} question={question} revealAnswer={showAnswer} onSubmit={handleQuestionSubmit} />;
+			return <MatchingQuestion key={questionIndex} app={app} question={question} revealAnswer={showAnswer} />;
 		} else if (isShortOrLongAnswer(question)) {
-			return <ShortOrLongAnswerQuestion key={questionIndex} app={app} question={question} settings={settings} revealAnswer={showAnswer} onSubmit={handleQuestionSubmit} />;
+			return <ShortOrLongAnswerQuestion key={questionIndex} app={app} question={question} settings={settings} revealAnswer={showAnswer} />;
 		}
 	};
 
@@ -153,11 +143,7 @@ const QuizModal = ({ app, settings, quiz, quizSaver, reviewing, handleClose, srS
 					{/* Spaced Repetition Controls */}
 					{srService && (
 						<div className="sr-controls-qg">
-							{/* For question types with Submit button, wait for submission before showing rating */}
-							{currentQuestionRequiresSubmit() && !submitted ? (
-								// Don't show SR controls yet - let user submit their answer first
-								<div className="sr-instruction">Submit your answer above, then rate difficulty</div>
-							) : !showAnswer ? (
+							{!showAnswer ? (
 								<button 
 									className="sr-show-answer-btn"
 									onClick={handleShowAnswer}

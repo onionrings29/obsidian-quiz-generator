@@ -425,12 +425,7 @@ FillInTheBlankQuestion, MatchingQuestion, ShortOrLongAnswerQuestion */
 	border-top: 1px solid var(--background-modifier-border);
 }
 
-.sr-instruction {
-	text-align: center;
-	color: var(--text-muted);
-	font-size: var(--font-ui-smaller);
-	padding: 0.5rem;
-}
+
 
 .sr-show-answer-btn {
 	width: 100%;
